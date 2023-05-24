@@ -5,16 +5,20 @@ FLP_DOCKER_IMG ?= quay.io/netobserv/flowlogs-pipeline
 
 .PHONY: deploy-observability
 deploy-observability: ## Deploy observability  
+	make push-observability-namespaces
 	make set-permissions
 	make go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console 
 	make go-west deploy-flp deploy-ebpf-agent 
+	make pop-namespaces
 	make go-east
 	@echo -e "\n==> Done (Deploy Observability)\n" 
 
 .PHONY: delete-observability
 delete-observability: ## Delete observability  
+	make push-observability-namespaces
 	make go-east undeploy-loki undeploy-prometheus undeploy-flp undeploy-ebpf-agent undeploy-console
 	make go-west undeploy-flp undeploy-ebpf-agent 
+	make pop-namespaces
 	make go-east
 	@echo -e "\n==> Done (delete Observability)\n" 
 
@@ -30,9 +34,27 @@ go-west:
 set-permissions:
 	@echo -e "\n==> Setting permissions\n" 
 	kubectl config use-context kind-east
-	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=east:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=netobserv:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
 	kubectl config use-context kind-west
-	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=west:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=netobserv:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+
+.PHONY: push-observability-namespaces
+push-observability-namespaces:
+	@echo -e "\n==> Creating and setting observability namespaces\n" 
+	kubectl config use-context kind-east
+	-kubectl create namespace netobserv
+	kubectl config set-context --current --namespace=netobserv
+	kubectl config use-context kind-west
+	-kubectl create namespace netobserv
+	kubectl config set-context --current --namespace=netobserv
+
+.PHONY: pop-namespaces
+pop-namespaces:
+	@echo -e "\n==> Moving back to namespaces\n" 
+	kubectl config use-context kind-east
+	kubectl config set-context --current --namespace=east
+	kubectl config use-context kind-west
+	kubectl config set-context --current --namespace=west
 
 .PHONY: deploy-console
  deploy-console:

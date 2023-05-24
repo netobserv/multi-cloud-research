@@ -84,5 +84,4 @@ data:
     scrape_configs:
       - job_name: 'flowlogs-pipeline'
         static_configs:
-          - targets: ['flowlogs-pipeline-metrics.east.svc.cluster.local:9102']
-          - targets: ['flowlogs-pipeline-metrics.west.svc.cluster.local:9102']
+          - targets: ['flowlogs-pipeline-metrics.netobserv.svc.cluster.local:9102']

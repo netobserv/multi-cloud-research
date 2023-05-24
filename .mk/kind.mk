@@ -20,11 +20,11 @@ deploy-cni: $(KIND) ## deploy calico cni
 	@echo -e "\n==> Deploy calico cni\n" 
 	kubectl config use-context kind-east
 	kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
-	kubectl wait --namespace tigera-operator --for=condition=ready pod --selector=name=tigera-operator --timeout=90s
+	kubectl wait --namespace tigera-operator --for=condition=ready pod --selector=name=tigera-operator --timeout=180s
 	kubectl create -f contrib/calico/calicoeastconfig.yaml
 	kubectl config use-context kind-west
 	kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
-	kubectl wait --namespace tigera-operator --for=condition=ready pod --selector=name=tigera-operator --timeout=90s
+	kubectl wait --namespace tigera-operator --for=condition=ready pod --selector=name=tigera-operator --timeout=180s
 	kubectl create -f contrib/calico/calicowestconfig.yaml
 
 # REF: https://kind.sigs.k8s.io/docs/user/loadbalancer/

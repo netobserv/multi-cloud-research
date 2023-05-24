@@ -17,8 +17,8 @@ deploy-skupper: $(KIND) ##Deploy skupper
 	kubectl get secret skupper-console-users -o jsonpath={.data.admin} | base64 -d
 	@echo -e "\n"
 	kubectl config use-context kind-west
-	sleep 100
 	skupper token create /tmp/skupper-connection-token.yaml
+	sleep 5
 	kubectl config use-context kind-east
 	skupper link create /tmp/skupper-connection-token.yaml
 	sleep 5
