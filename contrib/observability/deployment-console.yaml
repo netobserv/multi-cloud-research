@@ -41,11 +41,16 @@ data:
       portNames:
         "3100": loki
     quickFilters:
+      - name: MultiCluster
+        filter:
+          src_kind: 'Pod'
+          dst_kind: 'Pod'
+          src_namespace: 'east,west'
+        default: true
       - name: Applications
         filter:
           src_namespace!: 'openshift-,netobserv'
           dst_namespace!: 'openshift-,netobserv'
-        default: true
       - name: Infrastructure
         filter:
           src_namespace: 'openshift-,netobserv'
