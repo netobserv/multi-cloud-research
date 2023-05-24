@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mbg-deployment
+  labels:
+    app: mbg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mbg
+  template:
+    metadata:
+      labels:
+        app: mbg
+    spec:
+      containers:
+      - name: mbg
+        image: quay.io/mcnet/mbg
+        imagePullPolicy: IfNotPresent
+        command: [ "sleep" ]
+        args: [ "infinity" ]        
+        ports:
+        - containerPort: 50051
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mbgctl-deployment
+  labels:
+    app: mbgctl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mbgctl
+  template:
+    metadata:
+      labels:
+        app: mbgctl
+    spec:
+      containers:
+      - name: mbgctl
+        image: quay.io/mcnet/mbg
+        imagePullPolicy: IfNotPresent
+        command: [ "sleep" ]
+        args: [ "infinity" ]  
+        ports:
+        - containerPort: 50051

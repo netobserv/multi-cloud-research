@@ -1,0 +1,106 @@
+log-level: debug
+metricsSettings:
+  port: 9102
+  prefix: flp_op_
+  noPanic: true
+pipeline:
+- name: ingest
+- name: enrich
+  follows: ingest
+- name: loki
+  follows: enrich
+- name: prometheus
+  follows: enrich
+health:
+  port: 8080
+parameters:
+- name: ingest
+  ingest:
+    type: grpc
+    grpc:
+      port: 2055
+- name: enrich
+  transform:
+    type: network
+    network:
+      rules:
+      - input: SrcAddr
+        output: SrcK8S
+        type: add_kubernetes
+      - input: DstAddr
+        output: DstK8S
+        type: add_kubernetes
+      - type: reinterpret_direction
+      directionInfo:
+        reporterIPField: AgentIP
+        srcHostField: SrcK8S_HostIP
+        dstHostField: DstK8S_HostIP
+        flowDirectionField: FlowDirection
+        ifDirectionField: IfDirection
+- name: loki
+  write:
+    type: loki
+    loki:
+      url: %LOKI_URL%
+      batchWait: 1s
+      batchSize: 10485760
+      timeout: 10s
+      minBackoff: 1s
+      maxBackoff: 5s
+      maxRetries: 2
+      labels:
+      - SrcK8S_Namespace
+      - SrcK8S_OwnerName
+      - DstK8S_Namespace
+      - DstK8S_OwnerName
+      - FlowDirection
+      staticLabels:
+        app: netobserv-flowcollector
+      clientConfig:
+        proxy_url:
+        tls_config:
+          insecure_skip_verify: false
+        follow_redirects: false
+      timestampLabel: TimeFlowEndMs
+      timestampScale: 1ms
+- name: prometheus
+  encode:
+    type: prom
+    prom:
+      metrics:
+      - name: namespace_flows_total
+        type: counter
+        filter:
+          key: ''
+          value: ''
+        valueKey: ''
+        labels:
+        - SrcK8S_Namespace
+        - DstK8S_Namespace
+        buckets:
+      - name: node_ingress_bytes_total
+        type: counter
+        filter:
+          key: FlowDirection
+          value: '0'
+        valueKey: Bytes
+        labels:
+        - SrcK8S_HostName
+        - DstK8S_HostName
+        buckets:
+      - name: workload_ingress_bytes_total
+        type: counter
+        filter:
+          key: FlowDirection
+          value: '0'
+        valueKey: Bytes
+        labels:
+        - SrcK8S_Namespace
+        - DstK8S_Namespace
+        - SrcK8S_OwnerName
+        - DstK8S_OwnerName
+        - SrcK8S_OwnerType
+        - DstK8S_OwnerType
+        buckets:
+      prefix: netobserv_
+      expiryTime: 0s
