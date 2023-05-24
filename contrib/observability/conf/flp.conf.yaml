@@ -30,6 +30,20 @@ parameters:
       - input: DstAddr
         output: DstK8S
         type: add_kubernetes
+      - input: DstAddr
+        output: DstSubnet
+        type: add_subnet
+        parameters: /24
+      - input: DstSubnet
+        output: SubnetName
+        type: add_label_if
+        parameters: %SUBNET1%
+        assignee: %SUBNET1NAME%
+      - input: DstSubnet
+        output: SubnetName
+        type: add_label_if
+        parameters: %SUBNET2%
+        assignee: %SUBNET2NAME%
       - type: reinterpret_direction
       directionInfo:
         reporterIPField: AgentIP

@@ -67,8 +67,14 @@ undeploy-ebpf-agent:
 .PHONY: deploy-flp
 deploy-flp:
 	@echo -e "\n==> Deploy FLP\n"
+	$(eval WEST_INFO := $(shell kubectl get service skupper-router --context kind-west --no-headers=true | awk '{print $$4}' | sed 's|.$$$$|0|'))
+	$(eval EAST_INFO := $(shell kubectl get service skupper-router --context kind-east --no-headers=true | awk '{print $$4}' | sed 's|.$$$$|0|'))
+	echo $(EAST_INFO)
+	echo $(WEST_INFO)
 	sed 's|%DOCKER_IMG%|$(FLP_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(FLP_DOCKER_TAG)|g' contrib/observability/deployment-flp.yaml > /tmp/deployment.yaml
-	export LOKI_URL=`cat /tmp/loki_url.addr`; sed 's|%LOKI_URL%|'$$LOKI_URL'|g' contrib/observability/conf/flp.conf.yaml > /tmp/flp.conf.yaml
+	export LOKI_URL=`cat /tmp/loki_url.addr`; \
+		sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%SUBNET1%|$(EAST_INFO)|g; s|%SUBNET1NAME%|'subnet_east'|g; s|%SUBNET2%|$(WEST_INFO)|g; s|%SUBNET2NAME%|'subnet_west'|g' \
+	       	contrib/observability/conf/flp.conf.yaml > /tmp/flp.conf.yaml
 	kubectl create configmap flowlogs-pipeline-configuration --from-file=flowlogs-pipeline.conf.yaml=/tmp/flp.conf.yaml
 	kubectl apply -f /tmp/deployment.yaml
 	kubectl rollout status "deploy/flowlogs-pipeline" --timeout=600s
