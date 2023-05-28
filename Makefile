@@ -44,6 +44,7 @@ validate_go:
 	required_ver=${MIN_GO_VERSION}; min_ver=$$(echo -e "$$current_ver\n$$required_ver" | sort -V | head -n 1); \
 	if [[ $$min_ver == $$current_ver ]]; then echo -e "\n!!! golang version > $$required_ver required !!!\n"; exit 7;fi
 
+include .mk/utils.mk
 include .mk/kind.mk
 include .mk/skupper.mk
 include .mk/mbg.mk
@@ -52,10 +53,10 @@ include .mk/observability.mk
 
 ##@ all-in-one
 .PHONY: all-in-one-skupper
-all-in-one-skupper: delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+all-in-one-skupper: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
-all-in-one-mbg: delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
+all-in-one-mbg: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 
