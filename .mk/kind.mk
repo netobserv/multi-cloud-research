@@ -34,11 +34,15 @@ deploy-loadbalancers: $(KIND) ## deploy loadbalancers
 	kubectl config use-context kind-east
 	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
 	kubectl wait --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=600s
-	kubectl apply -f contrib/metallb/eastlbconfig.yaml
+	export PRE_DOCKER_SUBNET=`docker network inspect kind | jq -r '.[0].IPAM.Config[0].Subnet' | cut -d'.' -f 1,2`; \
+	sed 's|%PRE-DOCKER-SUBNET%|'$$PRE_DOCKER_SUBNET'|g' contrib/metallb/eastlbconfig.yaml > /tmp/eastlbconfig.yaml
+	kubectl apply -f /tmp/eastlbconfig.yaml
 	kubectl config use-context kind-west
 	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
 	kubectl wait --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=600s
-	kubectl apply -f contrib/metallb/westlbconfig.yaml
+	export PRE_DOCKER_SUBNET=`docker network inspect kind | jq -r '.[0].IPAM.Config[0].Subnet' | cut -d'.' -f 1,2`; \
+	sed 's|%PRE-DOCKER-SUBNET%|'$$PRE_DOCKER_SUBNET'|g' contrib/metallb/westlbconfig.yaml > /tmp/westlbconfig.yaml
+	kubectl apply -f /tmp/westlbconfig.yaml
 	
 .PHONY: delete-kind-clusters
 delete-kind-clusters: $(KIND) ## Delete clusters
