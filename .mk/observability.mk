@@ -5,16 +5,20 @@ FLP_DOCKER_IMG ?= quay.io/netobserv/flowlogs-pipeline
 
 .PHONY: deploy-observability
 deploy-observability: ## Deploy observability  
+	make push-observability-namespaces
 	make set-permissions
 	make go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console 
 	make go-west deploy-flp deploy-ebpf-agent 
+	make pop-namespaces
 	make go-east
 	@echo -e "\n==> Done (Deploy Observability)\n" 
 
 .PHONY: delete-observability
 delete-observability: ## Delete observability  
+	make push-observability-namespaces
 	make go-east undeploy-loki undeploy-prometheus undeploy-flp undeploy-ebpf-agent undeploy-console
 	make go-west undeploy-flp undeploy-ebpf-agent 
+	make pop-namespaces
 	make go-east
 	@echo -e "\n==> Done (delete Observability)\n" 
 
@@ -30,9 +34,27 @@ go-west:
 set-permissions:
 	@echo -e "\n==> Setting permissions\n" 
 	kubectl config use-context kind-east
-	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=east:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=netobserv:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
 	kubectl config use-context kind-west
-	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=west:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=netobserv:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+
+.PHONY: push-observability-namespaces
+push-observability-namespaces:
+	@echo -e "\n==> Creating and setting observability namespaces\n" 
+	kubectl config use-context kind-east
+	-kubectl create namespace netobserv
+	kubectl config set-context --current --namespace=netobserv
+	kubectl config use-context kind-west
+	-kubectl create namespace netobserv
+	kubectl config set-context --current --namespace=netobserv
+
+.PHONY: pop-namespaces
+pop-namespaces:
+	@echo -e "\n==> Moving back to namespaces\n" 
+	kubectl config use-context kind-east
+	kubectl config set-context --current --namespace=east
+	kubectl config use-context kind-west
+	kubectl config set-context --current --namespace=west
 
 .PHONY: deploy-console
  deploy-console:
@@ -67,14 +89,22 @@ undeploy-ebpf-agent:
 .PHONY: deploy-flp
 deploy-flp:
 	@echo -e "\n==> Deploy FLP\n"
-	$(eval WEST_INFO := $(shell kubectl get service skupper-router --context kind-west --no-headers=true | awk '{print $$4}' | sed 's|.$$$$|0|'))
-	$(eval EAST_INFO := $(shell kubectl get service skupper-router --context kind-east --no-headers=true | awk '{print $$4}' | sed 's|.$$$$|0|'))
-	echo $(EAST_INFO)
-	echo $(WEST_INFO)
+	$(eval EAST_NODE_IP := $(shell kubectl get nodes --context kind-east --no-headers=true -o jsonpath={.items[0].status.addresses[0].address} ))
+	$(eval EAST_GATEWAY_EXTERNAL_IP := $(shell kubectl get service skupper-router --namespace=east --context kind-east --no-headers=true | awk '{print $$4}' ))
+	$(eval EAST_GATEWAY_CLUSTER_IP := $(shell kubectl get service skupper-router --namespace=east --context kind-east --no-headers=true | awk '{print $$3}' ))
+	$(eval WEST_NODE_IP := $(shell kubectl get nodes --context kind-west --no-headers=true -o jsonpath={.items[0].status.addresses[0].address} ))
+	$(eval WEST_GATEWAY_EXTERNAL_IP := $(shell kubectl get service skupper-router --namespace=west --context kind-west --no-headers=true | awk '{print $$4}' ))
+	$(eval WEST_GATEWAY_CLUSTER_IP := $(shell kubectl get service skupper-router --namespace=west --context kind-west --no-headers=true | awk '{print $$3}' ))
+	@echo -e "\n=> East node IP is: "$(EAST_NODE_IP)"\n"
+	@echo -e "\n=> East GW External IP is: "$(EAST_GATEWAY_EXTERNAL_IP)"\n"
+	@echo -e "\n=> East GW Cluster IP is: "$(EAST_GATEWAY_CLUSTER_IP)"\n"
+	@echo -e "\n=> West node IP is: "$(WEST_NODE_IP)"\n"
+	@echo -e "\n=> West GW External IP is: "$(WEST_GATEWAY_EXTERNAL_IP)"\n"
+	@echo -e "\n=> West GW Cluster IP is: "$(WEST_GATEWAY_CLUSTER_IP)"\n"
 	sed 's|%DOCKER_IMG%|$(FLP_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(FLP_DOCKER_TAG)|g' contrib/observability/deployment-flp.yaml > /tmp/deployment.yaml
 	export LOKI_URL=`cat /tmp/loki_url.addr`; \
-		sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%SUBNET1%|$(EAST_INFO)|g; s|%SUBNET1NAME%|'subnet_east'|g; s|%SUBNET2%|$(WEST_INFO)|g; s|%SUBNET2NAME%|'subnet_west'|g' \
-	       	contrib/observability/conf/flp.conf.yaml > /tmp/flp.conf.yaml
+	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%EAST_GATEWAY_EXTERNAL_IP%|$(EAST_GATEWAY_EXTERNAL_IP)|g; s|%EAST_GATEWAY_CLUSTER_IP%|$(EAST_GATEWAY_CLUSTER_IP)|g; s|%WEST_GATEWAY_EXTERNAL_IP%|$(WEST_GATEWAY_EXTERNAL_IP)|g; s|%WEST_GATEWAY_CLUSTER_IP%|$(WEST_GATEWAY_CLUSTER_IP)|g; s|%EAST_NODE_IP%|$(EAST_NODE_IP)|g; s|%WEST_NODE_IP%|$(WEST_NODE_IP)|g;' \
+	contrib/observability/conf/flp.conf.yaml > /tmp/flp.conf.yaml
 	kubectl create configmap flowlogs-pipeline-configuration --from-file=flowlogs-pipeline.conf.yaml=/tmp/flp.conf.yaml
 	kubectl apply -f /tmp/deployment.yaml
 	kubectl rollout status "deploy/flowlogs-pipeline" --timeout=600s
