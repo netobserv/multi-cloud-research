@@ -11,5 +11,5 @@ nodes:
 networking:
   podSubnet: 10.241.1.0/16
   serviceSubnet: 10.110.1.0/16
+  apiServerAddress: "0.0.0.0"
   disableDefaultCNI: true
- 

@@ -1,9 +1,9 @@
 ##@ kind
 
 .PHONY: create-kind-clusters
-create-kind-clusters: $(KIND) ## Create clusters
+create-kind-clusters: $(KIND) ## Create Clusters
 	@echo -e "\n==> Create kind clusters\n" 
-	docker kill proxy;docker rm proxy; docker run -d --name proxy --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io registry:2
+	-docker kill proxy;docker rm proxy; docker run -d --name proxy --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io registry:2
 	$(KIND) create cluster --name $(KIND_CLUSTER_NAME_EAST) --config contrib/kind/kindeastconfig.yaml
 	kubectl config use-context kind-east
 	kubectl create namespace east
@@ -16,7 +16,11 @@ create-kind-clusters: $(KIND) ## Create clusters
 
 # REF: https://piotrminkowski.com/2021/07/08/kubernetes-multicluster-with-kind-and-submariner/
 .PHONY: deploy-cni
+<<<<<<< HEAD
 deploy-cni: $(KIND) ## Deploy calico cni
+=======
+deploy-cni: $(KIND) ## Deploy Calico CNI
+>>>>>>> 4b9581e (deploy and undeploy support for submariner)
 	@echo -e "\n==> Deploy calico cni\n" 
 	kubectl config use-context kind-east
 	kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
@@ -28,10 +32,18 @@ deploy-cni: $(KIND) ## Deploy calico cni
 	sleep 10
 	kubectl wait --namespace tigera-operator --for=condition=ready pod --selector=name=tigera-operator --timeout=600s
 	kubectl create -f contrib/calico/calicowestconfig.yaml
+	-kubectl --context kind-east wait --for=condition=Ready pods --all -n calico-system --timeout 300s
+	-kubectl --context kind-east wait --for=condition=Ready pods --all -n calico-apiserver --timeout 180s
+	-kubectl --context kind-west wait --for=condition=Ready pods --all -n calico-system --timeout 300s
+	-kubectl --context kind-west wait --for=condition=Ready pods --all -n calico-apiserver --timeout 180s
 
 # REF: https://kind.sigs.k8s.io/docs/user/loadbalancer/
 .PHONY: deploy-loadbalancers
+<<<<<<< HEAD
 deploy-loadbalancers: $(KIND) ## Deploy loadbalancers
+=======
+deploy-loadbalancers: $(KIND) ## Deploy Load Balancer
+>>>>>>> 4b9581e (deploy and undeploy support for submariner)
 	@echo -e "\n==> Deploy loadbalancers\n" 
 	kubectl config use-context kind-east
 	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
@@ -47,7 +59,7 @@ deploy-loadbalancers: $(KIND) ## Deploy loadbalancers
 	kubectl apply -f /tmp/westlbconfig.yaml
 	
 .PHONY: delete-kind-clusters
-delete-kind-clusters: $(KIND) ## Delete clusters
+delete-kind-clusters: $(KIND) ## Delete Clusters
 	@echo -e "\n==> Delete kind clusters\n" 
 	$(KIND) delete cluster --name $(KIND_CLUSTER_NAME_EAST)
 	$(KIND) delete cluster --name $(KIND_CLUSTER_NAME_WEST)
