@@ -2,18 +2,14 @@
 
 GET_SKUPPER="https://skupper.io/install.sh"
 
-.PHONY: download-skupper
-download-skupper:
+.PHONY: deploy-skupper
+deploy-skupper: $(KIND) download-skupper ##Deploy Skupper
 	@echo -e "\n==> Downloading skupper\n"
 ifeq (,$(wildcard ${SKUPPER}))
 	curl ${GET_SKUPPER} | sh
 else
 	@echo "==> ${SKUPPER} exists. skipping download"
 endif
-	@echo -e "\nDone\n"
-
-.PHONY: deploy-skupper
-deploy-skupper: $(KIND) download-skupper ##Deploy Skupper
 	@echo -e "\n==> Deploy skupper\n" 
 	kubectl config use-context kind-west
 	${SKUPPER} init --enable-console --enable-flow-collector

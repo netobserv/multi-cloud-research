@@ -21,6 +21,7 @@ KIND_CLUSTER_NAME_WEST ?= west
 # This is default installation location of skupper.
 SKUPPER := ${HOME}/.local/bin/skupper
 SUBCTL := ${HOME}/.local/bin/subctl
+CALICOCTL := ${HOME}/.local/bin/calicoctl
 
 .DEFAULT_GOAL := help
 
@@ -65,6 +66,7 @@ clusters-and-workload: prereqs delete-kind-clusters create-kind-clusters deploy-
 
 .PHONY: all-in-one-skupper
 <<<<<<< HEAD
+<<<<<<< HEAD
 all-in-one-skupper: SELECTOR=
 all-in-one-skupper: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ##       Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
@@ -86,14 +88,17 @@ all-in-one-mbg-gui: prereqs delete-kind-clusters create-kind-clusters deploy-cni
 
 =======
 all-in-one-skupper: kind-cni-and-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+=======
+all-in-one-skupper: clusters-and-workload deploy-loadbalancers deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+>>>>>>> 97b4c22 (Added functionality to run submariner over calico)
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
 .PHONY: all-in-one-submariner
-all-in-one-submariner: kind-cni-and-workload deploy-submariner deploy-observability ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+all-in-one-submariner: clusters-and-workload deploy-submariner ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
 
 .PHONY: all-in-one-mbg
-all-in-one-mbg: kind-cni-and-workload deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
+all-in-one-mbg: clusters-and-workloaddeploy-mbg deploy-loadbalancers deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 ##@ clean

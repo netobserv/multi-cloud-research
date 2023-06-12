@@ -1,19 +1,16 @@
 ##@ Submariner
 
 GET_SUBMARINER="https://get.submariner.io"
-
-.PHONY: download-submariner
-download-submariner:
-	@echo -e "\n==> Downloading submariner\n"
-ifeq (,$(wildcard ${SUBCTL}))
-	curl -Ls ${GET_SUBMARINER} | bash
-else
-	@echo "==> ${SUBCTL} exists. skipping download"
-endif
-	@echo -e "\nDone\n"
+GET_CALICOCTL="https://github.com/projectcalico/calico/releases/latest/download/calicoctl-linux-amd64"
 
 .PHONY: deploy-submariner
-deploy-submariner: $(KIND) download-submariner ##Deploy Submariner
+deploy-submariner: $(KIND) ##Deploy Submariner
+	@echo -e "\n==> Downloading submariner\n"
+ifeq (,$(wildcard ${SUBMARINER}))
+	curl -Ls ${GET_SUBMARINER} | bash
+else
+	@echo "==> ${SUBMARINER} exists. skipping download"
+endif
 	@echo -e "\n==> Deploy submariner\n"
 	@echo -e "\n==> Setting up config.\n"
 	cp ~/.kube/config ${BINDIR}/kubeconfig-backup
@@ -35,9 +32,9 @@ deploy-submariner: $(KIND) download-submariner ##Deploy Submariner
 	-kubectl --context kind-east wait --for=condition=Ready pods --all -n submariner-operator --timeout 300s
 	-kubectl --context kind-west wait --for=condition=Ready pods --all -n submariner-operator --timeout 300s
 	@echo -e "\nCheck submariner information\n"
-	-${SUBCTL} show brokers
-	-${SUBCTL} show gateways
+	-${SUBCTL} show all
 	@echo -e "\nDone\n"
+	make submariner-connect-workload
 
 .PHONY: delete-submariner
 delete-submariner: $(KIND) ##Delete Submariner
@@ -53,4 +50,6 @@ delete-submariner: $(KIND) ##Delete Submariner
 .PHONY: submariner-connect-workload
 submariner-connect-workload: $(KIND)
 	@echo -e "\n==> Connect workload\n"
-	@echo -e "\n==> Not implemented\n"
+	kubectl config use-context kind-west
+	${SUBCTL} export service --namespace west details
+	@echo -e "\n==> Done\n"

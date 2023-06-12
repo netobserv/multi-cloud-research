@@ -11,10 +11,9 @@ spec:
     ipPools:
     - blockSize: 26
       cidr: 10.241.0.0/16
-      encapsulation: VXLANCrossSubnet
+      encapsulation: VXLAN # Submariner isn't compatible with anything other than VXLAN for calico.
       natOutgoing: Enabled
       nodeSelector: all()
-
 ---
 
 # This section configures the Calico API server.

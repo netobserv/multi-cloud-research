@@ -21,7 +21,7 @@ delete-observability: ## Delete observability
 	make go-west undeploy-flp undeploy-ebpf-agent 
 	make pop-namespaces
 	make go-east
-	@echo -e "\n==> Done (delete Observability)\n" 
+	@echo -e "\n==> Done (Delete Observability)\n" 
 
 .PHONY: go-east
 go-east:

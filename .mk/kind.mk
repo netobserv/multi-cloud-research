@@ -20,22 +20,37 @@ create-kind-clusters: $(KIND) ## Create Clusters
 deploy-cni: $(KIND) ## Deploy calico cni
 =======
 deploy-cni: $(KIND) ## Deploy Calico CNI
+<<<<<<< HEAD
 >>>>>>> 4b9581e (deploy and undeploy support for submariner)
+=======
+	@echo -e "\n==> Downloading calicoctl\n"
+ifeq (,$(wildcard ${CALICOCTL}))
+	curl -Ls ${GET_CALICOCTL} -o ${CALICOCTL}
+	chmod +x ${CALICOCTL}
+else
+	@echo "==> ${CALICOCTL} exists. skipping download"
+endif
+>>>>>>> 97b4c22 (Added functionality to run submariner over calico)
 	@echo -e "\n==> Deploy calico cni\n" 
+	@echo -e "\n[EAST]\n"
 	kubectl config use-context kind-east
 	kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
 	sleep 10
 	kubectl wait --namespace tigera-operator --for=condition=ready pod --selector=name=tigera-operator --timeout=600s
 	kubectl create -f contrib/calico/calicoeastconfig.yaml
+	${CALICOCTL} create -f contrib/calico/ippools_east.yaml --allow-version-mismatch
+	@echo -e "\n[WEST]\n"
 	kubectl config use-context kind-west
 	kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
 	sleep 10
 	kubectl wait --namespace tigera-operator --for=condition=ready pod --selector=name=tigera-operator --timeout=600s
 	kubectl create -f contrib/calico/calicowestconfig.yaml
+	${CALICOCTL} create -f contrib/calico/ippools_west.yaml --allow-version-mismatch
 	-kubectl --context kind-east wait --for=condition=Ready pods --all -n calico-system --timeout 300s
 	-kubectl --context kind-east wait --for=condition=Ready pods --all -n calico-apiserver --timeout 180s
 	-kubectl --context kind-west wait --for=condition=Ready pods --all -n calico-system --timeout 300s
 	-kubectl --context kind-west wait --for=condition=Ready pods --all -n calico-apiserver --timeout 180s
+	@echo -e "\n==> Done\n"
 
 # REF: https://kind.sigs.k8s.io/docs/user/loadbalancer/
 .PHONY: deploy-loadbalancers
