@@ -98,7 +98,7 @@ all-in-one-submariner: clusters-and-workload deploy-submariner ## Deploy everyth
 	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
 
 .PHONY: all-in-one-mbg
-all-in-one-mbg: clusters-and-workloaddeploy-mbg deploy-loadbalancers deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
+all-in-one-mbg: clusters-and-workload deploy-loadbalancers deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 ##@ clean
