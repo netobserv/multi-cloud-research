@@ -19,9 +19,10 @@ KIND_CLUSTER_NAME_EAST ?= east
 KIND_CLUSTER_NAME_WEST ?= west
 
 # This is default installation location of skupper.
-SKUPPER := ${HOME}/.local/bin/skupper
-SUBCTL := ${HOME}/.local/bin/subctl
-CALICOCTL := ${HOME}/.local/bin/calicoctl
+BINDIR := ${HOME}/.local/bin
+SKUPPER := ${BINDIR}/skupper
+SUBCTL := ${BINDIR}/subctl
+CALICOCTL := ${BINDIR}/calicoctl
 
 .DEFAULT_GOAL := help
 
@@ -50,13 +51,13 @@ validate_go:
 	required_ver=${MIN_GO_VERSION}; min_ver=$$(echo -e "$$current_ver\n$$required_ver" | sort -V | head -n 1); \
 	if [[ $$min_ver == $$current_ver ]]; then echo -e "\n!!! golang version > $$required_ver required !!!\n"; exit 7;fi
 
-include .mk/utils.mk
-include .mk/kind.mk
-include .mk/skupper.mk
-include .mk/mbg.mk
-include .mk/submariner.mk
-include .mk/workload.mk
-include .mk/observability.mk
+include mk/utils.mk
+include mk/kind.mk
+include mk/skupper.mk
+include mk/mbg.mk
+include mk/submariner.mk
+include mk/workload.mk
+include mk/observability.mk
 
 ##@ Super Commands
 
@@ -85,7 +86,7 @@ all-in-one-mbg-gui: prereqs delete-kind-clusters create-kind-clusters deploy-cni
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 .PHONY: all-in-one-submariner
-all-in-one-submariner: clusters-and-workload deploy-submariner ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+all-in-one-submariner: clusters-and-workload deploy-loadbalancers deploy-submariner ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
 
 ##@ clean
