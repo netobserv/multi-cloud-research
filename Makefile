@@ -65,8 +65,6 @@ clusters-and-workload: prereqs delete-kind-clusters create-kind-clusters deploy-
 	@echo -e "\n==> Done (Deploy Kind, CNI, Loadbalancer, workload)\n" 
 
 .PHONY: all-in-one-skupper
-<<<<<<< HEAD
-<<<<<<< HEAD
 all-in-one-skupper: SELECTOR=
 all-in-one-skupper: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ##       Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
@@ -86,23 +84,11 @@ all-in-one-mbg-gui: SELECTOR=app=mbg
 all-in-one-mbg-gui: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ##     Deploy everything with mbg with revised GUI
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
-=======
-all-in-one-skupper: kind-cni-and-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
-=======
-all-in-one-skupper: clusters-and-workload deploy-loadbalancers deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
->>>>>>> 97b4c22 (Added functionality to run submariner over calico)
-	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
-
 .PHONY: all-in-one-submariner
 all-in-one-submariner: clusters-and-workload deploy-submariner ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
-
-.PHONY: all-in-one-mbg
-all-in-one-mbg: clusters-and-workload deploy-loadbalancers deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
-	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 ##@ clean
 .PHONY: clean
 clean: delete-kind-clusters ## Delete clusters and clean the setup
 	@echo -e "\n==> Done\n"
->>>>>>> 4b9581e (deploy and undeploy support for submariner)

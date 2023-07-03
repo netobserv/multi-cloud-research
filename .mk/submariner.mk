@@ -1,7 +1,6 @@
 ##@ Submariner
 
 GET_SUBMARINER="https://get.submariner.io"
-GET_CALICOCTL="https://github.com/projectcalico/calico/releases/latest/download/calicoctl-linux-amd64"
 
 .PHONY: deploy-submariner
 deploy-submariner: $(KIND) ##Deploy Submariner
