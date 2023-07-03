@@ -5,10 +5,11 @@ FLP_DOCKER_IMG ?= quay.io/netobserv/flowlogs-pipeline
 
 .PHONY: deploy-observability
 deploy-observability: ## Deploy observability  
+	@echo -e "\n SELECTOR = " $(SELECTOR) "\n"
 	make push-observability-namespaces
 	make set-permissions
-	make go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console 
-	make go-west deploy-flp deploy-ebpf-agent 
+	make SELECTOR=$(SELECTOR) go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console
+	make SELECTOR=$(SELECTOR) go-west deploy-flp deploy-ebpf-agent
 	make pop-namespaces
 	make go-east
 	@echo -e "\n==> Done (Deploy Observability)\n" 
@@ -89,9 +90,14 @@ undeploy-ebpf-agent:
 .PHONY: deploy-flp
 deploy-flp:
 	@echo -e "\n==> Deploy FLP\n"
+	@echo -e "\n SELECTOR = " $(SELECTOR) "\n"
+	$(eval EAST_GATEWAY_IP := $(shell kubectl get pods --context kind-east -n east --selector=$(SELECTOR) --no-headers=true -o wide | awk '{print $$6}' ))
+	$(eval WEST_GATEWAY_IP := $(shell kubectl get pods --context kind-west -n west --selector=$(SELECTOR) --no-headers=true -o wide | awk '{print $$6}' ))
+	@echo -e "\n EAST_GATEWAY_IP = " $(EAST_GATEWAY_IP) "\n"
+	@echo -e "\n WEST_GATEWAY_IP = " $(WEST_GATEWAY_IP) "\n"
 	sed 's|%DOCKER_IMG%|$(FLP_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(FLP_DOCKER_TAG)|g' contrib/observability/deployment-flp.yaml > /tmp/deployment.yaml
 	export LOKI_URL=`cat /tmp/loki_url.addr`; \
-	sed 's|%LOKI_URL%|'$$LOKI_URL'|g;' \
+	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%EAST_GATEWAY_IP%|$(EAST_GATEWAY_IP)|g; s|%WEST_GATEWAY_IP%|$(WEST_GATEWAY_IP)|g;' \
 	contrib/observability/conf/flp.conf.yaml > /tmp/flp.conf.yaml
 	kubectl create configmap flowlogs-pipeline-configuration --from-file=flowlogs-pipeline.conf.yaml=/tmp/flp.conf.yaml
 	kubectl apply -f /tmp/deployment.yaml
