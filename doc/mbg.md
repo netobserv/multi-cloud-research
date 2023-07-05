@@ -23,10 +23,10 @@ There is network traffic between **mbg-deployment/east** and **mbg-deployment/we
 The traffic between **mbg-deployment/east** and **mbg-deployment/west** is not seen in the picture because as far as the console is concerned, this traffic is outside of its purview - it is in the internet where the console does not see the traffic.
 
 
-To show the virual connectivity between the clusters, we re-assign the mbg-deployment nodes to their own namespace, so that the GUI places them together in the same box, giving the appearance of the continuity of the network flow.
+To show the virual connectivity between the clusters, we re-assign the **mbg-deployment** nodes to their own namespace, so that the GUI places them together in the same box, giving the appearance of the continuity of the network flow.
 To create this setup, run the command:
 ```
-make all-in-one-mbg-revised
+make all-in-one-mbg-gui
 ```
 
 The topology now looks like the following.
@@ -35,4 +35,4 @@ The topology now looks like the following.
 
 The **details** pod actually sits in the **west** cluster, but its service is available on the **east** cluster.
 
-Only entities (pods and services) that actually send traffic between each other are shown in the graphs.
+Only entities (pods and services) that actually send traffic between each other and produce flow logs are shown in the graphs.
