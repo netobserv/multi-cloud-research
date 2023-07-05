@@ -1,4 +1,4 @@
-log-level: trace
+log-level: debug
 metricsSettings:
   port: 9102
   prefix: flp_op_
