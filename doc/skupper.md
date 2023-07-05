@@ -5,6 +5,7 @@ This page summarizes a demonstration of network topology and connectivity betwee
 
 We have 2 clusters named **east** and **west**.
 In the **east** cluster, we have an application called **productpage**, which uses components **reviews**, **ratings**, and **details**.
+See [Bookinfo microservice application](https://istio.io/latest/docs/examples/bookinfo/).
 The pod and service for **details** sit in the **west** cluster, while the other pods sit in the **east** cluster.
 
 Skupper is used to make the **details** service (on the **west** cluster) available on the **east** cluster.
@@ -24,7 +25,7 @@ There is network traffic between **skupper-server/east** and **skupper-server/we
 The traffic between **skupper-server/east** and **skupper-server/west** is not seen in the picture because as far as the console is concerned, this traffic is outside of its purview - it is in the internet where the console does not see the traffic.
 
 
-To show the virual connectivity between the clusters, we re-assign the **skupper-server** nodes to their own namespace, so that the GUI places them together in the same box, giving the appearance of the continuity of the network flow.
+To show the virtual connectivity between the clusters, we re-assign the **skupper-server** nodes to their own namespace, so that the GUI places them together in the same box, giving the appearance of the continuity of the network flow.
 To create this setup, run the command:
 ```
 make all-in-one-skupper-gui
