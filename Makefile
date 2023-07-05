@@ -54,22 +54,21 @@ include .mk/observability.mk
 ##@ all-in-one
 .PHONY: all-in-one-skupper
 all-in-one-skupper: SELECTOR=
-all-in-one-skupper: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+all-in-one-skupper: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ##       Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
-##@ all-in-one
 .PHONY: all-in-one-skupper-revised
 all-in-one-skupper-revised: SELECTOR=app.kubernetes.io/name=skupper-service-controller
-all-in-one-skupper-revised: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+all-in-one-skupper-revised: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ## Deploy everything with skupper with revised GUI
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
 .PHONY: all-in-one-mbg
 all-in-one-mbg: SELECTOR=
-all-in-one-mbg: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
+all-in-one-mbg: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ##       Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 .PHONY: all-in-one-mbg-revised
 all-in-one-mbg-revised: SELECTOR=app=mbg
-all-in-one-mbg-revised: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
+all-in-one-mbg-revised: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ##     Deploy everything with mbg with revised GUI
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 

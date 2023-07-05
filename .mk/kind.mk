@@ -16,7 +16,7 @@ create-kind-clusters: $(KIND) ## Create clusters
 
 # REF: https://piotrminkowski.com/2021/07/08/kubernetes-multicluster-with-kind-and-submariner/
 .PHONY: deploy-cni
-deploy-cni: $(KIND) ## deploy calico cni
+deploy-cni: $(KIND) ## Deploy calico cni
 	@echo -e "\n==> Deploy calico cni\n" 
 	kubectl config use-context kind-east
 	kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
@@ -31,7 +31,7 @@ deploy-cni: $(KIND) ## deploy calico cni
 
 # REF: https://kind.sigs.k8s.io/docs/user/loadbalancer/
 .PHONY: deploy-loadbalancers
-deploy-loadbalancers: $(KIND) ## deploy loadbalancers
+deploy-loadbalancers: $(KIND) ## Deploy loadbalancers
 	@echo -e "\n==> Deploy loadbalancers\n" 
 	kubectl config use-context kind-east
 	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
