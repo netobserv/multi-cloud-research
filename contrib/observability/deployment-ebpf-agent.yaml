@@ -20,7 +20,7 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: netobserv-ebpf-agent
-          image: quay.io/netobserv/netobserv-ebpf-agent:main
+          image: quay.io/netobserv/netobserv-ebpf-agent:2d63d90
           securityContext:
             privileged: true
             runAsUser: 0

@@ -6,13 +6,13 @@ deploy-mbg: $(KIND) ##Deploy mbg
 	kubectl config use-context kind-east
 	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=east:default --dry-run=client -o yaml | kubectl apply -f - 2>&1 
 	kubectl apply -f contrib/mbg/mbg.yaml;
-	kubectl wait --for=condition=ready pod --selector=app=mbg --timeout=90s;
-	kubectl wait --for=condition=ready pod --selector=app=mbgctl --timeout=90s;
+	kubectl wait --for=condition=ready pod --selector=app=mbg --timeout=600s;
+	kubectl wait --for=condition=ready pod --selector=app=mbgctl --timeout=600s;
 	kubectl config use-context kind-west;
 	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=west:default --dry-run=client -o yaml | kubectl apply -f - 2>&1 
 	kubectl apply -f contrib/mbg/mbg.yaml
-	kubectl wait --for=condition=ready pod --selector=app=mbg --timeout=90s;
-	kubectl wait --for=condition=ready pod --selector=app=mbgctl --timeout=90s;
+	kubectl wait --for=condition=ready pod --selector=app=mbg --timeout=600s;
+	kubectl wait --for=condition=ready pod --selector=app=mbgctl --timeout=600s;
 	make start-mbg
 	make mbg-connect-workload
 

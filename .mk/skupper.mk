@@ -16,7 +16,7 @@ deploy-skupper: $(KIND) ##Deploy skupper
 	@echo -e "\nUse password:\n"
 	kubectl get secret skupper-console-users -o jsonpath={.data.admin} | base64 -d
 	@echo -e "\n"
-	sleep 5
+	kubectl wait --namespace east --for=condition=ready pod --selector=app.kubernetes.io/name=skupper-service-controller --timeout=600s
 	kubectl config use-context kind-west
 	skupper token create /tmp/skupper-connection-token.yaml
 	sleep 5
