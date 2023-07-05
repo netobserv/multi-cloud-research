@@ -1,4 +1,4 @@
-log-level: debug
+log-level: trace
 metricsSettings:
   port: 9102
   prefix: flp_op_
@@ -30,90 +30,6 @@ parameters:
       - input: DstAddr
         output: DstK8S
         type: add_kubernetes
-        # Enrich DstAddr based on WEST_GATEWAY_IP
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_Namespace
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: gateway
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_Type
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: Pod
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_OwnerType
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: Pod
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_OwnerName
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: gateway
-        # Enrich DstAddr based on EAST_GATEWAY_IP
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_Namespace
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: gateway
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_Type
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: Pod
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_OwnerType
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: Pod
-      - input: DstAddr
-        type: add_if
-        output: DstK8S_OwnerName
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: gateway
-        # Enrich SrcAddr based on WEST_GATEWAY_IP
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_Namespace
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: gateway
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_Type
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: Pod
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_OwnerType
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: Pod
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_OwnerName
-        parameters: =="%WEST_GATEWAY_IP%"
-        assignee: gateway
-        # Enrich SrcAddr based on EAST_GATEWAY_IP
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_Namespace
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: gateway
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_Type
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: Pod
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_OwnerType
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: Pod
-      - input: SrcAddr
-        type: add_if
-        output: SrcK8S_OwnerName
-        parameters: =="%EAST_GATEWAY_IP%"
-        assignee: gateway
       - type: reinterpret_direction
       directionInfo:
         reporterIPField: AgentIP
