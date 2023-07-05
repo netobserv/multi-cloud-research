@@ -11,6 +11,7 @@ Mbg is used to make the **details** service (on the **west** cluster) available 
 MBG creates a proxy **details** service in the **east** cluster.
 To create this setup, run the command:
 ```
+make all-in-one-mbg
 ```
 
 The topology looks like the following.

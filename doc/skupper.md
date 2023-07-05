@@ -7,10 +7,11 @@ We have 2 clusters named **east** and **west**.
 In the **east** cluster, we have an application called **productpage**, which uses components **reviews**, **ratings**, and **details**.
 The pod and service for **details** sit in the **west** cluster, while the other pods sit in the **east** cluster.
 
-Mbg is used to make the **details** service (on the **west** cluster) available on the **east** cluster.
+Skupper is used to make the **details** service (on the **west** cluster) available on the **east** cluster.
 Skupper creates a proxy **details** service in the **east** cluster.
 To create this setup, run the command:
 ```
+make all-in-one-skupper
 ```
 
 The topology looks like the following.
