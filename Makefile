@@ -86,7 +86,7 @@ all-in-one-mbg-gui: prereqs delete-kind-clusters create-kind-clusters deploy-cni
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 .PHONY: all-in-one-submariner
-all-in-one-submariner: clusters-and-workload deploy-loadbalancers deploy-submariner ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+all-in-one-submariner: clusters-and-workload deploy-loadbalancers deploy-submariner deploy-observability ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
 
 ##@ clean
