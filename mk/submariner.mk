@@ -50,5 +50,9 @@ delete-submariner: $(KIND) ##Delete Submariner
 submariner-connect-workload: $(KIND)
 	@echo -e "\n==> Connect workload\n"
 	kubectl config use-context kind-west
-	${SUBCTL} export service --namespace west details
+	${SUBCTL} export service --namespace app details
+	@echo -e "\n==> Done\n"
+	@echo -e "\n==> Switch to east and set proper details service endpoint\n"
+	kubectl config use-context kind-east
+	kubectl set env deployment productpage-v1 DETAILS_HOSTNAME=details.app.svc.clusterset.local
 	@echo -e "\n==> Done\n"
