@@ -8,12 +8,14 @@ create-kind-clusters: $(KIND) ## Create Clusters
 	-docker kill proxy;docker rm proxy; docker run -d --name proxy --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io registry:2
 	$(KIND) create cluster --name $(KIND_CLUSTER_NAME_EAST) --config contrib/kind/kindeastconfig.yaml
 	kubectl config use-context kind-east
-	kubectl create namespace app
-	kubectl config set-context --current --namespace=app
+	kubectl create namespace east
+	kubectl create namespace west
+	kubectl config set-context --current --namespace=east
 	$(KIND) create cluster --name $(KIND_CLUSTER_NAME_WEST) --config contrib/kind/kindwestconfig.yaml
 	kubectl config use-context kind-west
-	kubectl create namespace app
-	kubectl config set-context --current --namespace=app
+	kubectl create namespace west
+	kubectl create namespace east
+	kubectl config set-context --current --namespace=west
 	docker network inspect -f '{{.IPAM.Config}}' kind
 
 # REF: https://piotrminkowski.com/2021/07/08/kubernetes-multicluster-with-kind-and-submariner/

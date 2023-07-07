@@ -53,9 +53,9 @@ push-observability-namespaces:
 pop-namespaces:
 	@echo -e "\n==> Moving back to namespaces\n" 
 	kubectl config use-context kind-east
-	kubectl config set-context --current --namespace=app
+	kubectl config set-context --current --namespace=east
 	kubectl config use-context kind-west
-	kubectl config set-context --current --namespace=app
+	kubectl config set-context --current --namespace=west
 
 .PHONY: deploy-console
  deploy-console:
