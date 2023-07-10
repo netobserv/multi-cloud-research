@@ -1,0 +1,24 @@
+## Disabled for now, Tigera isn't taking the calico v3 directly.
+## Need to remove service ip pool as well, possibly with calicoctl.
+## Ref 1 - https://submariner.io/operations/deployment/calico/
+## Ref 2 - https://github.com/submariner-io/submariner/issues/407
+
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: podwestcluster
+spec:
+  cidr: 10.241.0.0/16
+  natOutgoing: false
+  disabled: true
+
+---
+
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: svcwestcluster
+spec:
+  cidr: 10.111.0.0/16
+  natOutgoing: false
+  disabled: true

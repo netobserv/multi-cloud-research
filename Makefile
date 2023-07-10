@@ -1,4 +1,5 @@
 export GOBIN=$(CURDIR)/bin
+export BINDIR=$(GOBIN)
 export PATH:=$(GOBIN):$(PATH)
 
 include .bingo/Variables.mk
@@ -16,6 +17,12 @@ MIN_GO_VERSION := 1.18.0
 CMD_DIR=./cmd/
 KIND_CLUSTER_NAME_EAST ?= east
 KIND_CLUSTER_NAME_WEST ?= west
+
+# This is default installation location of skupper.
+BINDIR := ${HOME}/.local/bin
+SKUPPER := ${BINDIR}/skupper
+SUBCTL := ${BINDIR}/subctl
+CALICOCTL := ${BINDIR}/calicoctl
 
 .DEFAULT_GOAL := help
 
@@ -44,31 +51,45 @@ validate_go:
 	required_ver=${MIN_GO_VERSION}; min_ver=$$(echo -e "$$current_ver\n$$required_ver" | sort -V | head -n 1); \
 	if [[ $$min_ver == $$current_ver ]]; then echo -e "\n!!! golang version > $$required_ver required !!!\n"; exit 7;fi
 
-include .mk/utils.mk
-include .mk/kind.mk
-include .mk/skupper.mk
-include .mk/mbg.mk
-include .mk/workload.mk
-include .mk/observability.mk
+include mk/utils.mk
+include mk/kind.mk
+include mk/skupper.mk
+include mk/mbg.mk
+include mk/submariner.mk
+include mk/workload.mk
+include mk/observability.mk
 
-##@ all-in-one
+##@ Super Commands
+
+.PHONY: clusters-and-workload
+clusters-and-workload: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload ## Deploy clusters, cni, loadbalancers and demo-workload
+	@echo -e "\n==> Done (Deploy Kind, CNI, Loadbalancer, workload)\n" 
+
 .PHONY: all-in-one-skupper
 all-in-one-skupper: SELECTOR=
-all-in-one-skupper: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ##       Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+all-in-one-skupper: clusters-and-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
 .PHONY: all-in-one-skupper-gui
 all-in-one-skupper-gui: SELECTOR=app.kubernetes.io/name=skupper-service-controller
-all-in-one-skupper-gui: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-skupper deploy-observability ## Deploy everything with skupper with revised GUI
+all-in-one-skupper-gui: clusters-and-workload deploy-skupper deploy-observability ## Deploy everything with skupper with revised GUI
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
 .PHONY: all-in-one-mbg
 all-in-one-mbg: SELECTOR=
-all-in-one-mbg: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ##       Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
+all-in-one-mbg: clusters-and-workload deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 .PHONY: all-in-one-mbg-gui
 all-in-one-mbg-gui: SELECTOR=app=mbg
-all-in-one-mbg-gui: prereqs delete-kind-clusters create-kind-clusters deploy-cni deploy-loadbalancers deploy-workload deploy-mbg deploy-observability ##     Deploy everything with mbg with revised GUI
+all-in-one-mbg-gui: clusters-and-workload deploy-mbg deploy-observability ## Deploy everything with mbg with revised GUI
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
+.PHONY: all-in-one-submariner
+all-in-one-submariner: clusters-and-workload deploy-submariner deploy-observability ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
+
+##@ clean
+.PHONY: clean
+clean: delete-kind-clusters ## Delete clusters and clean the setup
+	@echo -e "\n==> Done\n"

@@ -1,42 +1,49 @@
-##@ skupper
+##@ Skupper
+
+GET_SKUPPER="https://skupper.io/install.sh"
 
 .PHONY: deploy-skupper
-deploy-skupper: $(KIND) ##Deploy skupper
+deploy-skupper: $(KIND) download-skupper ##Deploy Skupper
+	@echo -e "\n==> Downloading skupper\n"
+ifeq (,$(wildcard ${SKUPPER}))
+	curl ${GET_SKUPPER} | sh
+else
+	@echo "==> ${SKUPPER} exists. skipping download"
+endif
 	@echo -e "\n==> Deploy skupper\n" 
-	curl https://skupper.io/install.sh | sh	
 	kubectl config use-context kind-west
-	skupper init --enable-console --enable-flow-collector
-	skupper status
+	${SKUPPER} init --enable-console --enable-flow-collector
+	${SKUPPER} status
 	@echo -e "\nUse password:\n"
 	kubectl get secret skupper-console-users -o jsonpath={.data.admin} | base64 -d
 	@echo -e "\n"
 	kubectl config use-context kind-east
-	skupper init --enable-console --enable-flow-collector
-	skupper status
+	${SKUPPER} init --enable-console --enable-flow-collector
+	${SKUPPER} status
 	@echo -e "\nUse password:\n"
 	kubectl get secret skupper-console-users -o jsonpath={.data.admin} | base64 -d
 	@echo -e "\n"
 	kubectl wait --namespace east --for=condition=ready pod --selector=app.kubernetes.io/name=skupper-service-controller --timeout=600s
 	kubectl config use-context kind-west
-	skupper token create /tmp/skupper-connection-token.yaml
+	${SKUPPER} token create /tmp/skupper-connection-token.yaml
 	sleep 5
 	kubectl config use-context kind-east
-	skupper link create /tmp/skupper-connection-token.yaml
+	${SKUPPER} link create /tmp/skupper-connection-token.yaml
 	sleep 5
-	skupper link status
-	make skupper-connect-workload
+	${SKUPPER} link status
+	make skupperconnect-workload
 
 .PHONY: delete-skupper
-delete-skupper: $(KIND) ##Delete skupper
+delete-skupper: $(KIND) ##Delete Skupper
 	@echo -e "\n==> Delete skupper\n" 
 	kubectl config use-context kind-east
-	-skupper delete
+	-${SKUPPER} delete
 	kubectl config use-context kind-west
-	-skupper delete
+	-${SKUPPER} delete
 
 .PHONY: skupper-connect-workload
 skupper-connect-workload: $(KIND)
 	@echo -e "\n==> Connect workload\n"
 	kubectl config use-context kind-west
-	skupper expose service details --address details --protocol http
+	${SKUPPER} expose service details --address details --protocol http
 	kubectl config use-context kind-east
