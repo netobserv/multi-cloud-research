@@ -17,3 +17,11 @@ make all-in-one-submariner
 The topology looks like the following.
 
 ![submariner-plain-png](images/submariner-plain.png)
+
+A different view showing `details` on one side and `product page` on other side is this.
+
+![submariner-view](images/submariner-view.png)
+
+Finally an image showing the webapp view after submariner connection.
+
+![workload-connected](images/workload-connected.png)
