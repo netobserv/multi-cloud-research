@@ -66,27 +66,31 @@ clusters-and-workload: prereqs delete-kind-clusters create-kind-clusters deploy-
 	@echo -e "\n==> Done (Deploy Kind, CNI, Loadbalancer, workload)\n" 
 
 .PHONY: all-in-one-skupper
-all-in-one-skupper: SELECTOR=
 all-in-one-skupper: clusters-and-workload deploy-skupper deploy-observability ## Deploy everything with skupper (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
 .PHONY: all-in-one-skupper-gui
-all-in-one-skupper-gui: SELECTOR=app.kubernetes.io/name=skupper-service-controller
+all-in-one-skupper-gui: MAKE_TYPE=SKUPPER
 all-in-one-skupper-gui: clusters-and-workload deploy-skupper deploy-observability ## Deploy everything with skupper with revised GUI
 	@echo -e "\n==> Done (Deploy everything with skupper)\n" 
 
 .PHONY: all-in-one-mbg
-all-in-one-mbg: SELECTOR=
 all-in-one-mbg: clusters-and-workload deploy-mbg deploy-observability ## Deploy everything with mbg (clusters, cni, loadbalancers, demo-workload, mbg, observability)
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 .PHONY: all-in-one-mbg-gui
-all-in-one-mbg-gui: SELECTOR=app=mbg
+all-in-one-mbg-gui: MAKE_TYPE=MBG
 all-in-one-mbg-gui: clusters-and-workload deploy-mbg deploy-observability ## Deploy everything with mbg with revised GUI
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
 .PHONY: all-in-one-submariner
 all-in-one-submariner: clusters-and-workload deploy-submariner deploy-observability ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
+	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
+
+
+.PHONY: all-in-one-submariner-gui
+all-in-one-submariner-gui: MAKE_TYPE=SUBMARINER
+all-in-one-submariner-gui: clusters-and-workload deploy-submariner deploy-observability ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with submariner)\n" 
 
 ##@ clean

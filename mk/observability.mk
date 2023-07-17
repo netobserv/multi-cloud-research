@@ -5,11 +5,11 @@ FLP_DOCKER_IMG ?= quay.io/netobserv/flowlogs-pipeline
 
 .PHONY: deploy-observability
 deploy-observability: ## Deploy observability  
-	@echo -e "\n SELECTOR = " $(SELECTOR) "\n"
+	@echo -e "\n MAKE_TYPE = " $(MAKE_TYPE) "\n"
 	make push-observability-namespaces
 	make set-permissions
-	make SELECTOR=$(SELECTOR) go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console
-	make SELECTOR=$(SELECTOR) go-west deploy-flp deploy-ebpf-agent
+	make MAKE_TYPE=$(MAKE_TYPE) go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console
+	make MAKE_TYPE=$(MAKE_TYPE) go-west deploy-flp deploy-ebpf-agent
 	make pop-namespaces
 	make go-east
 	@echo -e "\n==> Done (Deploy Observability)\n" 
@@ -90,11 +90,27 @@ undeploy-ebpf-agent:
 .PHONY: deploy-flp
 deploy-flp:
 	@echo -e "\n==> Deploy FLP\n"
-	@echo -e "\n SELECTOR = " $(SELECTOR) "\n"
+	@echo -e "\n MAKE_TYPE = " $(MAKE_TYPE) "\n"
 	sed 's|%DOCKER_IMG%|$(FLP_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(FLP_DOCKER_TAG)|g' contrib/observability/deployment-flp.yaml > /tmp/deployment.yaml
-ifneq ($(SELECTOR),)
-	$(eval EAST_GATEWAY_IP := $(shell kubectl get pods --context kind-east -n east --selector=$(SELECTOR) --no-headers=true -o wide | awk '{print $$6}' ))
-	$(eval WEST_GATEWAY_IP := $(shell kubectl get pods --context kind-west -n west --selector=$(SELECTOR) --no-headers=true -o wide | awk '{print $$6}' ))
+ifeq ($(MAKE_TYPE),SUBMARINER)
+	$(eval PRODUCTPAGE_POD_ID := $(shell kubectl get pods --context kind-east -n east --selector="app=productpage" --no-headers=true -o wide | awk '{print $$6}' ))
+	@echo -e "\n PRODUCTPAGE_POD_ID = " $(PRODUCTPAGE_POD_ID) "\n"
+	$(eval DETAILS_SERVICE_IP := $(shell kubectl get services -n west --selector=app=details --context kind-west | awk '{print $$3}' ))
+	@echo -e "\n DETAILS_SERVICE_IP = " $(DETAILS_SERVICE_IP) "\n"
+	export LOKI_URL=`cat /tmp/loki_url.addr`; \
+	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%PRODUCTPAGE_POD_ID%|$(PRODUCTPAGE_POD_ID)|g; s|%DETAILS_SERVICE_IP%|$(DETAILS_SERVICE_IP)|g;' \
+	contrib/observability/conf/flp.conf.submariner.yaml > /tmp/flp.conf.yaml
+else ifeq ($(MAKE_TYPE),MBG)
+	$(eval EAST_GATEWAY_IP := $(shell kubectl get pods --context kind-east -n east --selector=app=mbg --no-headers=true -o wide | awk '{print $$6}' ))
+	$(eval WEST_GATEWAY_IP := $(shell kubectl get pods --context kind-west -n west --selector=app=mbg --no-headers=true -o wide | awk '{print $$6}' ))
+	@echo -e "\n EAST_GATEWAY_IP = " $(EAST_GATEWAY_IP) "\n"
+	@echo -e "\n WEST_GATEWAY_IP = " $(WEST_GATEWAY_IP) "\n"
+	export LOKI_URL=`cat /tmp/loki_url.addr`; \
+	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%EAST_GATEWAY_IP%|$(EAST_GATEWAY_IP)|g; s|%WEST_GATEWAY_IP%|$(WEST_GATEWAY_IP)|g;' \
+	contrib/observability/conf/flp.conf.revised.yaml > /tmp/flp.conf.yaml
+else ifeq ($(MAKE_TYPE),SKUPPER)
+	$(eval EAST_GATEWAY_IP := $(shell kubectl get pods --context kind-east -n east --selector=app.kubernetes.io/name=skupper-service-controller --no-headers=true -o wide | awk '{print $$6}' ))
+	$(eval WEST_GATEWAY_IP := $(shell kubectl get pods --context kind-west -n west --selector=app.kubernetes.io/name=skupper-service-controller --no-headers=true -o wide | awk '{print $$6}' ))
 	@echo -e "\n EAST_GATEWAY_IP = " $(EAST_GATEWAY_IP) "\n"
 	@echo -e "\n WEST_GATEWAY_IP = " $(WEST_GATEWAY_IP) "\n"
 	export LOKI_URL=`cat /tmp/loki_url.addr`; \
@@ -158,7 +174,7 @@ undeploy-prometheus:
 # kubectl exec -it calico-node-5rnj7 -n calico-system -c calico-node -- calico-node -show-status
 # and find the names of the interfaces by the IP addresses 
 # for example: 10.240.134.199
-# | 10.240.134.199/32 | N/A        | cali410cd4daa3c | kernel1         | *       |
+# | 10.240.134.199/32 | N/A	| cali410cd4daa3c | kernel1         | *       |
 # we know that the interface is `cali410cd4daa3c` 
 # :-) 
 ## kubectl exec -it calico-node-b64kv -n calico-system -c calico-node -- calico-node -show-status | grep "| cali" | awk '{print $6}'
