@@ -95,7 +95,7 @@ deploy-flp:
 ifeq ($(MAKE_TYPE),SUBMARINER)
 	$(eval PRODUCTPAGE_POD_ID := $(shell kubectl get pods --context kind-east -n east --selector="app=productpage" --no-headers=true -o wide | awk '{print $$6}' ))
 	@echo -e "\n PRODUCTPAGE_POD_ID = " $(PRODUCTPAGE_POD_ID) "\n"
-	$(eval DETAILS_SERVICE_IP := $(shell kubectl get services -n west --selector=app=details --context kind-west | awk '{print $$3}' ))
+	$(eval DETAILS_SERVICE_IP := $(shell kubectl get services -n west --selector=app=details --no-headers=true --context kind-west | awk '{print $$3}' ))
 	@echo -e "\n DETAILS_SERVICE_IP = " $(DETAILS_SERVICE_IP) "\n"
 	export LOKI_URL=`cat /tmp/loki_url.addr`; \
 	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%PRODUCTPAGE_POD_ID%|$(PRODUCTPAGE_POD_ID)|g; s|%DETAILS_SERVICE_IP%|$(DETAILS_SERVICE_IP)|g;' \
