@@ -25,3 +25,10 @@ A different view showing `details` on one side and `product page` on other side 
 Finally an image showing the webapp view after submariner connection.
 
 ![workload-connected](images/workload-connected.png)
+
+We added annotations to the flow logs so we can see the information of the **unknown** object, whcih can be obtained by running:
+```
+make all-in-one-submariner-gui
+```
+
+![workload-connected](images/submariner-annotated.png)
