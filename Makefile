@@ -23,6 +23,12 @@ BINDIR := ${HOME}/.local/bin
 SKUPPER := ${BINDIR}/skupper
 SUBCTL := ${BINDIR}/subctl
 CALICOCTL := ${BINDIR}/calicoctl
+TMPDIR := /tmp
+
+FLP_DOCKER_IMG ?= quay.io/netobserv/flowlogs-pipeline
+FLP_DOCKER_TAG ?= main
+EBPF_AGENT_DOCKER_IMG ?= quay.io/netobserv/netobserv-ebpf-agent
+EBPF_AGENT_DOCKER_TAG ?= main
 
 .DEFAULT_GOAL := help
 

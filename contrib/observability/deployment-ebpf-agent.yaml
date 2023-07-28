@@ -20,7 +20,8 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: netobserv-ebpf-agent
-          image: quay.io/netobserv/netobserv-ebpf-agent:main
+          image: %DOCKER_IMG%:%DOCKER_TAG%
+          imagePullPolicy: Always
           securityContext:
             privileged: true
             runAsUser: 0
@@ -33,4 +34,8 @@ spec:
               value: "flowlogs-pipeline"
             - name: FLOWS_TARGET_PORT
               value: "2055"
+            - name: ENABLE_RTT
+              value: "true"
+            - name: SAMPLING
+              value: "0"
 

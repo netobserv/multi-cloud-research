@@ -1,7 +1,8 @@
 ##@ observability
 
-FLP_DOCKER_TAG ?= latest
-FLP_DOCKER_IMG ?= quay.io/netobserv/flowlogs-pipeline
+set-image-tags:
+	sed 's|%DOCKER_IMG%|$(FLP_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(FLP_DOCKER_TAG)|g' contrib/observability/deployment-flp.yaml > ${TMPDIR}/deployment-flp.yaml
+	sed 's|%DOCKER_IMG%|$(EBPF_AGENT_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(EBPF_AGENT_DOCKER_TAG)|g' contrib/observability/deployment-ebpf-agent.yaml > ${TMPDIR}/deployment-ebpf-agent.yaml
 
 .PHONY: deploy-observability
 deploy-observability: ## Deploy observability  
@@ -76,22 +77,21 @@ undeploy-console:
 	-kubectl delete service console-lb
 
 .PHONY: deploy-ebpf-agent
-deploy-ebpf-agent:
+deploy-ebpf-agent: set-image-tags
 	@echo -e "\n==> Deploy eBPF Agent\n" 
 	sleep 5
-	kubectl apply -f contrib/observability/deployment-ebpf-agent.yaml
+	kubectl apply -f ${TMPDIR}/deployment-ebpf-agent.yaml
 	kubectl rollout status "deploy/ebpf-agent" --timeout=600s
 
 .PHONY: undeploy-ebpf-agent
-undeploy-ebpf-agent:
+undeploy-ebpf-agent: set-image-tags
 	@echo -e "\n==> Undeploy eBPF Agent\n" 
-	kubectl --ignore-not-found=true delete -f contrib/observability/deployment-ebpf-agent.yaml || true
+	kubectl --ignore-not-found=true delete -f ${TMPDIR}/deployment-ebpf-agent.yaml || true
 
 .PHONY: deploy-flp
-deploy-flp:
+deploy-flp: set-image-tags
 	@echo -e "\n==> Deploy FLP\n"
 	@echo -e "\n SELECTOR = " $(SELECTOR) "\n"
-	sed 's|%DOCKER_IMG%|$(FLP_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(FLP_DOCKER_TAG)|g' contrib/observability/deployment-flp.yaml > /tmp/deployment.yaml
 ifneq ($(SELECTOR),)
 	$(eval EAST_GATEWAY_IP := $(shell kubectl get pods --context kind-east -n east --selector=$(SELECTOR) --no-headers=true -o wide | awk '{print $$6}' ))
 	$(eval WEST_GATEWAY_IP := $(shell kubectl get pods --context kind-west -n west --selector=$(SELECTOR) --no-headers=true -o wide | awk '{print $$6}' ))
@@ -106,15 +106,14 @@ else
 	contrib/observability/conf/flp.conf.yaml > /tmp/flp.conf.yaml
 endif
 	kubectl create configmap flowlogs-pipeline-configuration --from-file=flowlogs-pipeline.conf.yaml=/tmp/flp.conf.yaml
-	kubectl apply -f /tmp/deployment.yaml
+	kubectl apply -f ${TMPDIR}/deployment-flp.yaml
 	kubectl rollout status "deploy/flowlogs-pipeline" --timeout=600s
 
 .PHONY: undeploy-flp
-undeploy-flp:
+undeploy-flp: set-image-tags
 	@echo -e "\n==> Undeploy FLP\n" 
-	sed 's|%DOCKER_IMG%|$(FLP_DOCKER_IMG)|g;s|%DOCKER_TAG%|$(FLP_DOCKER_TAG)|g' contrib/observability/deployment-flp.yaml > /tmp/deployment.yaml
-	kubectl --ignore-not-found=true  delete configmap flowlogs-pipeline-configuration || true
-	kubectl --ignore-not-found=true delete -f /tmp/deployment.yaml || true
+	kubectl --ignore-not-found=true delete configmap flowlogs-pipeline-configuration || true
+	kubectl --ignore-not-found=true delete -f ${TMPDIR}/deployment-flp.yaml || true
 
 .PHONY: deploy-loki
 deploy-loki:

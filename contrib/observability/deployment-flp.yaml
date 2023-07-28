@@ -17,6 +17,7 @@ spec:
       containers:
         - name: flowlogs-pipeline
           image: %DOCKER_IMG%:%DOCKER_TAG%
+          imagePullPolicy: Always
           args:
           - "--config=/etc/flowlogs-pipeline/flowlogs-pipeline.conf.yaml"
           ports:
