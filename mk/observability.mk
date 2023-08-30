@@ -8,8 +8,8 @@ deploy-observability: ## Deploy observability
 	@echo -e "\n MAKE_TYPE = " $(MAKE_TYPE) "\n"
 	make push-observability-namespaces
 	make set-permissions
-	make MAKE_TYPE=$(MAKE_TYPE) go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console
-	make MAKE_TYPE=$(MAKE_TYPE) go-west deploy-flp deploy-ebpf-agent
+	make MAKE_TYPE=$(MAKE_TYPE) NS_PARAM=east go-east deploy-loki deploy-prometheus deploy-flp deploy-ebpf-agent deploy-console
+	make MAKE_TYPE=$(MAKE_TYPE) NS_PARAM=west go-west deploy-flp deploy-ebpf-agent
 	make pop-namespaces
 	make go-east
 	@echo -e "\n==> Done (Deploy Observability)\n" 
@@ -101,13 +101,29 @@ ifeq ($(MAKE_TYPE),SUBMARINER)
 	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%PRODUCTPAGE_POD_ID%|$(PRODUCTPAGE_POD_ID)|g; s|%DETAILS_SERVICE_IP%|$(DETAILS_SERVICE_IP)|g;' \
 	contrib/observability/conf/flp.conf.submariner.yaml > /tmp/flp.conf.yaml
 else ifeq ($(MAKE_TYPE),MBG)
+	@echo -e "\n NS_PARAM = " $(NS_PARAM) "\n"
 	$(eval EAST_GATEWAY_IP := $(shell kubectl get pods --context kind-east -n east --selector=app=mbg --no-headers=true -o wide | awk '{print $$6}' ))
 	$(eval WEST_GATEWAY_IP := $(shell kubectl get pods --context kind-west -n west --selector=app=mbg --no-headers=true -o wide | awk '{print $$6}' ))
+	$(eval MBG_LOG_IP := $(shell kubectl get services -n $(NS_PARAM) --selector=app=mbg --no-headers=true -o jsonpath={.items[1].spec.clusterIP}))
+	$(eval MBG_LOG_PORT := $(shell kubectl get services -n $(NS_PARAM) --selector=app=mbg --no-headers=true -o jsonpath={.items[1].spec.ports[].targetPort}))
 	@echo -e "\n EAST_GATEWAY_IP = " $(EAST_GATEWAY_IP) "\n"
 	@echo -e "\n WEST_GATEWAY_IP = " $(WEST_GATEWAY_IP) "\n"
+	@echo -e "\n MBG_LOG_IP = " $(MBG_LOG_IP) "\n"
+	@echo -e "\n MBG_LOG_PORT = " $(MBG_LOG_PORT) "\n"
 	export LOKI_URL=`cat /tmp/loki_url.addr`; \
-	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%EAST_GATEWAY_IP%|$(EAST_GATEWAY_IP)|g; s|%WEST_GATEWAY_IP%|$(WEST_GATEWAY_IP)|g;' \
-	contrib/observability/conf/flp.conf.revised.yaml > /tmp/flp.conf.yaml
+	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%EAST_GATEWAY_IP%|$(EAST_GATEWAY_IP)|g; s|%WEST_GATEWAY_IP%|$(WEST_GATEWAY_IP)|g; s|%MBG_LOG_IP%|$(MBG_LOG_IP)|g; s|%MBG_LOG_PORT%|$(MBG_LOG_PORT)|g;' \
+	contrib/observability/conf/flp.conf.mbg.yaml > /tmp/flp.conf.yaml
+else ifeq ($(MAKE_TYPE),MBG2)
+	@echo -e "\n NS_PARAM = " $(NS_PARAM) "\n"
+	$(eval MBG_LOG_IP := $(shell kubectl get services -n $(NS_PARAM) --selector=app=mbg --no-headers=true -o jsonpath={.items[1].spec.clusterIP}))
+	$(eval MBG_LOG_PORT := $(shell kubectl get services -n $(NS_PARAM) --selector=app=mbg --no-headers=true -o jsonpath={.items[1].spec.ports[].targetPort}))
+	@echo -e "\n EAST_GATEWAY_IP = " $(EAST_GATEWAY_IP) "\n"
+	@echo -e "\n WEST_GATEWAY_IP = " $(WEST_GATEWAY_IP) "\n"
+	@echo -e "\n MBG_LOG_IP = " $(MBG_LOG_IP) "\n"
+	@echo -e "\n MBG_LOG_PORT = " $(MBG_LOG_PORT) "\n"
+	export LOKI_URL=`cat /tmp/loki_url.addr`; \
+	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%EAST_GATEWAY_IP%|$(EAST_GATEWAY_IP)|g; s|%WEST_GATEWAY_IP%|$(WEST_GATEWAY_IP)|g; s|%MBG_LOG_IP%|$(MBG_LOG_IP)|g; s|%MBG_LOG_PORT%|$(MBG_LOG_PORT)|g;' \
+	contrib/observability/conf/flp.conf.mbg.yaml > /tmp/flp.conf.yaml
 else ifeq ($(MAKE_TYPE),SKUPPER)
 	$(eval EAST_GATEWAY_IP := $(shell kubectl get pods --context kind-east -n east --selector=app.kubernetes.io/name=skupper-service-controller --no-headers=true -o wide | awk '{print $$6}' ))
 	$(eval WEST_GATEWAY_IP := $(shell kubectl get pods --context kind-west -n west --selector=app.kubernetes.io/name=skupper-service-controller --no-headers=true -o wide | awk '{print $$6}' ))
@@ -115,7 +131,7 @@ else ifeq ($(MAKE_TYPE),SKUPPER)
 	@echo -e "\n WEST_GATEWAY_IP = " $(WEST_GATEWAY_IP) "\n"
 	export LOKI_URL=`cat /tmp/loki_url.addr`; \
 	sed 's|%LOKI_URL%|'$$LOKI_URL'|g; s|%EAST_GATEWAY_IP%|$(EAST_GATEWAY_IP)|g; s|%WEST_GATEWAY_IP%|$(WEST_GATEWAY_IP)|g;' \
-	contrib/observability/conf/flp.conf.revised.yaml > /tmp/flp.conf.yaml
+	contrib/observability/conf/flp.conf.skupper.yaml > /tmp/flp.conf.yaml
 else
 	export LOKI_URL=`cat /tmp/loki_url.addr`; \
 	sed 's|%LOKI_URL%|'$$LOKI_URL'|g;' \

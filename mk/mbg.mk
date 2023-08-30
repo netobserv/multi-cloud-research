@@ -6,11 +6,13 @@ deploy-mbg: $(KIND) ##Deploy mbg
 	kubectl config use-context kind-east
 	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=east:default --dry-run=client -o yaml | kubectl apply -f - 2>&1 
 	kubectl apply -f contrib/mbg/mbg.yaml;
+	sleep 5
 	kubectl wait --for=condition=ready pod --selector=app=mbg --timeout=600s;
 	kubectl wait --for=condition=ready pod --selector=app=mbgctl --timeout=600s;
 	kubectl config use-context kind-west;
 	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=west:default --dry-run=client -o yaml | kubectl apply -f - 2>&1 
 	kubectl apply -f contrib/mbg/mbg.yaml
+	sleep 5
 	kubectl wait --for=condition=ready pod --selector=app=mbg --timeout=600s;
 	kubectl wait --for=condition=ready pod --selector=app=mbgctl --timeout=600s;
 	make start-mbg
@@ -24,10 +26,14 @@ delete-mbg: $(KIND) ##Delete mbg
 	kubectl delete -f contrib/mbg/mbg.yaml
 	kubectl wait --for=delete pod --selector=app=mbg --timeout=60s
 	kubectl wait --for=delete pod --selector=app=mbgctl --timeout=60s
+	kubectl delete service mbg
+	kubectl delete service mbg-log
 	kubectl config use-context kind-west
 	kubectl delete -f contrib/mbg/mbg.yaml
 	kubectl wait --for=delete pod --selector=app=mbg --timeout=60s
 	kubectl wait --for=delete pod --selector=app=mbgctl --timeout=60s
+	kubectl delete service mbg
+	kubectl delete service mbg-log
 
 .PHONY: start-mbg
 start-mbg: $(KIND) 
@@ -65,12 +71,14 @@ mbg-connect-workload: $(KIND)
 	kubectl exec -i $$MBGCTL_EAST -- ./mbgctl add peer --id "mbg2" --target $$MBG_WEST_NODEIP --port 30443; \
 	kubectl exec -i $$MBGCTL_EAST -- ./mbgctl hello; \
 	kubectl exec -i $$MBG_EAST -- ./mbg get state; \
+	kubectl expose deployment mbg-deployment --port=9091 --target-port=9091 --name=mbg-log --type=NodePort; \
 	kubectl config use-context kind-west; \
 	export DETAILS_POD_IP=`kubectl get pods -l app=details -o jsonpath={.items[0].status.podIP}`; \
 	export DETAILS_POD_PORT=`kubectl get pods -l app=details -o jsonpath={.items[0].spec.containers[0].ports[0].containerPort}`; \
 	kubectl exec -i $$MBGCTL_WEST -- ./mbgctl add service --id details --target $$DETAILS_POD_IP --port $$DETAILS_POD_PORT --description details; \
 	kubectl exec -i $$MBGCTL_WEST -- ./mbgctl expose --service details; \
 	kubectl exec -i $$MBG_WEST -- ./mbg get state; \
+	kubectl expose deployment mbg-deployment --port=9091 --target-port=9091 --name=mbg-log --type=NodePort; \
 	kubectl config use-context kind-east; \
 	kubectl exec -i $$MBG_EAST -- ./mbg get state; \
 	export MBG_EAST_PORT_TMP=`kubectl exec -it $$MBG_EAST -- cat ./root/.mbg/mbgApp`; \

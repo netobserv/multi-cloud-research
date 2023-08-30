@@ -1,4 +1,4 @@
-log-level: debug
+log-level: info
 metricsSettings:
   port: 9102
   prefix: flp_op_
@@ -12,7 +12,7 @@ pipeline:
 - name: loki
   follows: transform_mbg
 - name: prometheus
-  follows: enrich
+  follows: transform_mbg
 health:
   port: 8080
 parameters:
@@ -127,7 +127,7 @@ parameters:
   transform:
     type: mbg
     mbg:
-      serverAddr: 10.240.134.210:9091
+      serverAddr: %MBG_LOG_IP%:%MBG_LOG_PORT%
 - name: loki
   write:
     type: loki
@@ -194,4 +194,3 @@ parameters:
         - DstK8S_OwnerType
         buckets:
       prefix: netobserv_
-      expiryTime: 0s
