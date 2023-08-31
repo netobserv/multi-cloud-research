@@ -35,19 +35,19 @@ go-west:
 set-permissions:
 	@echo -e "\n==> Setting permissions\n" 
 	kubectl config use-context kind-east
-	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=netobserv:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+	kubectl create clusterrolebinding east-admin --clusterrole=cluster-admin --serviceaccount=netobserv-east:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
 	kubectl config use-context kind-west
-	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=netobserv:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
+	kubectl create clusterrolebinding west-admin --clusterrole=cluster-admin --serviceaccount=netobserv-west:default --dry-run=client -o yaml | kubectl apply -f - 2>&1
 
 .PHONY: push-observability-namespaces
 push-observability-namespaces:
 	@echo -e "\n==> Creating and setting observability namespaces\n" 
 	kubectl config use-context kind-east
-	-kubectl create namespace netobserv
-	kubectl config set-context --current --namespace=netobserv
+	-kubectl create namespace netobserv-east
+	kubectl config set-context --current --namespace=netobserv-east
 	kubectl config use-context kind-west
-	-kubectl create namespace netobserv
-	kubectl config set-context --current --namespace=netobserv
+	-kubectl create namespace netobserv-west
+	kubectl config set-context --current --namespace=netobserv-west
 
 .PHONY: pop-namespaces
 pop-namespaces:
