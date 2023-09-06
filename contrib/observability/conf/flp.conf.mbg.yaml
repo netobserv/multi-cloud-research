@@ -125,9 +125,13 @@ parameters:
         ifDirectionField: IfDirection
 - name: transform_mbg
   transform:
-    type: mbg
-    mbg:
+    type: gateway
+    gateway:
       serverAddr: %MBG_LOG_IP%:%MBG_LOG_PORT%
+      addr1: SrcAddr
+      port1: SrcPort
+      addr2: DstAddr
+      port2: DstPort
 - name: loki
   write:
     type: loki
