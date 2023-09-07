@@ -83,6 +83,11 @@ all-in-one-mbg-gui: MAKE_TYPE=MBG
 all-in-one-mbg-gui: clusters-and-workload deploy-mbg deploy-observability ## Deploy everything with mbg with revised GUI
 	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
 
+.PHONY: all-in-one-mbg-gui2
+all-in-one-mbg-gui2: MAKE_TYPE=MBG2 FLP_DOCKER_IMG=quay.io/kalmanmeth/flowlogs-pipeline FLP_DOCKER_TAG=mbg
+all-in-one-mbg-gui2: clusters-and-workload deploy-mbg deploy-observability ## Deploy everything with mbg with revised GUI
+	@echo -e "\n==> Done (Deploy everything with mbg)\n" 
+
 .PHONY: all-in-one-submariner
 all-in-one-submariner: clusters-and-workload deploy-submariner deploy-observability ## Deploy everything with submariner (clusters, cni, loadbalancers, demo-workload, skupper, observability)
 	@echo -e "\n==> Done (Deploy everything with submariner)\n" 

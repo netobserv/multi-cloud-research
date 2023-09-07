@@ -7,10 +7,8 @@ pipeline:
 - name: ingest
 - name: enrich
   follows: ingest
-- name: transform_mbg
-  follows: enrich
 - name: loki
-  follows: transform_mbg
+  follows: enrich
 - name: prometheus
   follows: enrich
 health:
@@ -123,11 +121,6 @@ parameters:
         dstHostField: DstK8S_HostIP
         flowDirectionField: FlowDirection
         ifDirectionField: IfDirection
-- name: transform_mbg
-  transform:
-    type: mbg
-    mbg:
-      serverAddr: 10.240.134.210:9091
 - name: loki
   write:
     type: loki

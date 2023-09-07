@@ -14,14 +14,30 @@ spec:
       labels:
         app: mbg
     spec:
+      volumes:
+      - name: mbg-log-dir
+        emptyDir: {}
       containers:
       - name: mbg
-        image: quay.io/mcnet/mbg
+        image: quay.io/mcnet/mbg:observ
         imagePullPolicy: IfNotPresent
         command: [ "sleep" ]
         args: [ "infinity" ]        
         ports:
         - containerPort: 50051
+        volumeMounts:
+        - name: mbg-log-dir
+          mountPath: /root/.mbg/
+      - name: mbg-log
+        image: quay.io/kalmanmeth/mbg-log:test
+        imagePullPolicy: Always
+        command: ["/dump-log"]
+        args: ["/tmp/mbg/mbg.log", "0.0.0.0:9091"]
+        ports:
+        - containerPort: 9091
+        volumeMounts:
+        - name: mbg-log-dir
+          mountPath: /tmp/mbg
 
 ---
 
@@ -43,7 +59,7 @@ spec:
     spec:
       containers:
       - name: mbgctl
-        image: quay.io/mcnet/mbg
+        image: quay.io/mcnet/mbg:observ
         imagePullPolicy: IfNotPresent
         command: [ "sleep" ]
         args: [ "infinity" ]  
